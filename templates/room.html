@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* CSS styles for the chat room interface */
+    body {
+      margin: 0 auto;
+      max-width: 400px;
+      padding: 0 20px;
+      margin-top: 70px;
+      background: rgb(238,174,202);
+      background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgb(50, 130, 221) 100%);
+    }
+
+    .container {
+      border: 2px solid #dedede;
+      background-color: #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .darker {
+      border-color: #ccc;
+      background-color: #f1f1f1;
+    }
+
+    .container::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    .container img {
+      float: left;
+      max-width: 60px;
+      width: 100%;
+      margin-right: 20px;
+      border-radius: 50%;
+    }
+
+    .container img.right {
+      float: right;
+      margin-left: 20px;
+      margin-right:0;
+    }
+
+    .time-right {
+      float: right;
+      color: #219c25;
+      font-size: small;
+    }
+
+    .time-left {
+      float: left;
+      color: #e35050;
+      font-size: small;
+    }
+
+    .footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background-color: #ffffff;
+      color: rgb(5, 5, 5);
+      text-align: center;
+      padding: 5px 0;
+    }
+
+    #display {
+      max-height: 350px; /* Adjust the height as needed */
+      overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+    /* Input and button styles */
+    input[type=text], select {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input[type=submit] {
+      width: 100%;
+      background-color: rgb(50, 130, 221);
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+      background-color: rgb(243, 75, 148);
+    }
+
+    div {
+      border-radius: 5px;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+  </style>
+  <!-- Include jQuery library -->
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+</head>
+<body>
+
+<!-- Chat room title -->
+<div align="center" class="container">
+  <h1>ChatRoom: {{room}}</h1>
+</div>  
+
+<!-- Chat display area -->
+<div id="display" class="container">
+  <!-- Messages will be displayed here dynamically using jQuery -->
+</div>
+
+<!-- JavaScript for fetching and displaying messages -->
+<script>
+  $(document).ready(function(){
+    // Function to fetch and display messages every second
+    setInterval(function(){
+      $.ajax({
+        type: 'GET',
+        url : "/getMessages/{{room}}/",  // URL to fetch messages from Django backend
+        success: function(response){
+          $("#display").empty();  // Clear previous messages
+          // Loop through each message in the response
+          for (var key in response.messages) {
+            // Construct HTML for displaying the message
+            var temp="<div class='container darker'><b>"+response.messages[key].user+"</b><p>"+response.messages[key].value+"</p><span class='time-left'>"+response.messages[key].date.replace("T", " ").replace("Z", "")+"</span></div>";
+            // Append the message HTML to the display area
+            $("#display").append(temp);
+          }
+          // Scroll to the bottom of the display area
+          $("#display").scrollTop($("#display")[0].scrollHeight);
+        },
+        error: function(response){
+          alert('An error occurred');  // Show alert if there's an error
+        }
+      });
+    }, 1000);  // Fetch messages every 1 second
+  });
+</script>
+
+<!-- Message input form -->
+<div class="container">
+  <form id="post-form">
+    {% csrf_token %}
+    <!-- Hidden fields for username and room ID -->
+    <input type="hidden" name="username" id="username" value="{{username}}"/>
+    <input type="hidden" name="room_id" id="room_id" value="{{room_details.id}}"/>
+    <!-- Input field for typing messages -->
+    <input type="text" name="message" id="message" placeholder="Enter your message" width="100px" />
+    <!-- Submit button to send messages -->
+    <input type="submit" value="Send">
+  </form>
+</div>
+
+</body>
+
+<!-- JavaScript for sending messages -->
+<script type="text/javascript">
+  $(document).on('submit','#post-form',function(e){
+    e.preventDefault();
+    // AJAX request to send messages to Django backend
+    $.ajax({
+      type:'POST',
+      url:'/send',  // URL to send messages to Django backend
+      data:{
+        username:$('#username').val(),
+        room_id:$('#room_id').val(),
+        message:$('#message').val(),
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+      },
+      success: function(data){
+        // Optional: Handle success response
+      }
+    });
+    // Clear the message input field after sending the message
+    document.getElementById('message').value = ''
+  });
+</script>
+
+<!-- Footer -->
+<div class="footer">
+  <p>&copy; 2024 Abhishek Kumar | abhishek123cu@gmail.com</p>
+</div>
+</html>
