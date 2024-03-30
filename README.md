@@ -16,25 +16,10 @@ Check out the live demo of the chat room application [here](https://abhishek123c
 ## How to Use
 
 1. Clone the repository to your local machine:
-
-git clone https://github.com/your-username/django-chat-room.git
-
 2. Install the required dependencies using pip:
-
-pip install -r requirements.txt
-
-
-
+       pip install -r requirements.txt
 3. Run the Django development server:
-
-python manage.py runserver
-
-markdown
-Copy code
-
+       python manage.py runserver
 4. Access the chat room application in your web browser:
-
-http://localhost:8000/
-
-
+       http://localhost:8000/
 5. Enter a username, choose a room, and start chatting!
